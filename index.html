@@ -21,23 +21,27 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body { height: 100%; }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background: radial-gradient(circle at top, #141420, var(--bg));
+      background: var(--bg);
       color: var(--text);
       overflow-x: hidden;
+      margin: 0;
+      padding: 0;
     }
 
-    /* ===== HEADER COMPACTO ===== */
     header {
-      height: 45vh;
-      min-height: 320px;
+      height: 40vh;
+      min-height: 300px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
       text-align: center;
       position: relative;
+      background: var(--bg);
     }
 
     canvas#bg3d {
@@ -57,19 +61,18 @@
       font-size: 0.95rem;
     }
 
-    /* ===== SECCIÓN ===== */
     section {
-      padding: 2.5rem 1rem;
+      padding: 2rem 1rem;
       max-width: 1200px;
       margin: auto;
+      background: var(--bg);
     }
 
-    /* ===== CATEGORÍAS (MÓVIL FIRST) ===== */
     .categories {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 0.6rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
     }
 
     .category {
@@ -89,7 +92,6 @@
       color: #000;
     }
 
-    /* ===== PRODUCTOS ===== */
     .products {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -102,9 +104,9 @@
       border-radius: 18px;
       overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
     }
 
-    /* Animación MOBILE (tap) */
     .card:active {
       transform: scale(0.97);
     }
@@ -152,6 +154,69 @@
       text-align: center;
       opacity: 0.6;
       font-size: 0.75rem;
+      background: var(--bg);
+    }
+
+    /* ===== MODAL PRODUCTO ===== */
+    #productModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 1rem;
+    }
+
+    #productModal .modal-content {
+      background: var(--bg);
+      border-radius: 16px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      padding: 1rem;
+    }
+
+    #productModal img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 0.8rem;
+    }
+
+    #productModal h3 {
+      margin-bottom: 0.4rem;
+    }
+
+    #productModal p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-bottom: 0.6rem;
+    }
+
+    #productModal .price {
+      font-size: 1rem;
+    }
+
+    #productModal .closeModal {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.6rem; }
+      header p { font-size: 0.85rem; }
+      .categories { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+      .card img { height: 100px; }
     }
   </style>
 </head>
@@ -174,7 +239,7 @@
   </div>
 
   <div class="products" id="products">
-    <!-- ENTRANTES -->
+    <!-- productos... mismos de antes -->
     <div class="card" data-category="entrantes">
       <img src="https://picsum.photos/300/200?1" />
       <div class="card-content">
@@ -184,8 +249,6 @@
         <div class="price">6,50 €</div>
       </div>
     </div>
-
-    <!-- HAMBURGUESAS -->
     <div class="card" data-category="hamburguesas">
       <img src="https://picsum.photos/300/200?2" />
       <div class="card-content">
@@ -195,7 +258,6 @@
         <div class="price">11,50 €</div>
       </div>
     </div>
-
     <div class="card" data-category="hamburguesas">
       <img src="https://picsum.photos/300/200?3" />
       <div class="card-content">
@@ -205,8 +267,6 @@
         <div class="price">10,50 €</div>
       </div>
     </div>
-
-    <!-- PIZZAS -->
     <div class="card" data-category="pizzas">
       <img src="https://picsum.photos/300/200?4" />
       <div class="card-content">
@@ -215,8 +275,6 @@
         <div class="price">9,00 €</div>
       </div>
     </div>
-
-    <!-- BEBIDAS -->
     <div class="card" data-category="bebidas">
       <img src="https://picsum.photos/300/200?5" />
       <div class="card-content">
@@ -225,8 +283,6 @@
         <div class="price">3,50 €</div>
       </div>
     </div>
-
-    <!-- POSTRES -->
     <div class="card" data-category="postres">
       <img src="https://picsum.photos/300/200?6" />
       <div class="card-content">
@@ -242,8 +298,18 @@
   © 2026 Carta Digital Premium
 </footer>
 
+<!-- MODAL PRODUCTO -->
+<div id="productModal">
+  <div class="modal-content">
+    <span class="closeModal">×</span>
+    <img id="modalImg" src="" />
+    <h3 id="modalTitle"></h3>
+    <p id="modalDesc"></p>
+    <div class="price" id="modalPrice"></div>
+  </div>
+</div>
+
 <script>
-  /* ===== FILTRO + ANIMACIÓN SUAVE ===== */
   const categories = document.querySelectorAll('.category');
   const cards = document.querySelectorAll('.card');
   const container = document.getElementById('products');
@@ -251,7 +317,6 @@
   function filterCards(filter) {
     container.style.opacity = 0;
     container.style.transform = 'translateY(10px)';
-
     setTimeout(() => {
       cards.forEach(card => {
         const isTop = card.querySelector('.badge')?.textContent === 'TOP';
@@ -261,7 +326,6 @@
           card.style.display = card.dataset.category === filter ? 'block' : 'none';
         }
       });
-
       container.style.opacity = 1;
       container.style.transform = 'translateY(0)';
     }, 200);
@@ -277,32 +341,47 @@
 
   filterCards('top');
 
-  /* ===== 3D HEADER ===== */
+  // MODAL
+  const modal = document.getElementById('productModal');
+  const modalImg = document.getElementById('modalImg');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDesc = document.getElementById('modalDesc');
+  const modalPrice = document.getElementById('modalPrice');
+  const closeModal = document.querySelector('.closeModal');
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      modalImg.src = card.querySelector('img').src;
+      modalTitle.textContent = card.querySelector('h3').textContent;
+      modalDesc.textContent = card.querySelector('p').textContent;
+      modalPrice.textContent = card.querySelector('.price').textContent;
+    });
+  });
+
+  closeModal.addEventListener('click', () => { modal.style.display = 'none'; });
+
+  // 3D HEADER
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg3d'), alpha: true, antialias: true });
-
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.position.z = 5;
-
   const geometry = new THREE.TorusGeometry(1.2, 0.35, 16, 100);
   const material = new THREE.MeshStandardMaterial({ color: 0xff7a18, metalness: 0.7, roughness: 0.3 });
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
-
   const light = new THREE.PointLight(0xffffff, 1.2);
   light.position.set(5, 5, 5);
   scene.add(light);
   scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-
   function animate() {
     requestAnimationFrame(animate);
     mesh.rotation.x += 0.002;
     mesh.rotation.y += 0.003;
     renderer.render(scene, camera);
   }
-
   animate();
 </script>
 
