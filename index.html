@@ -170,14 +170,10 @@
     <div class="category" data-filter="hamburguesas">Hamburguesas</div>
     <div class="category" data-filter="pizzas">Pizzas</div>
     <div class="category" data-filter="bebidas">Bebidas</div>
-    <div class="category" data-filter="postres">Post
-    <div class="category" data-filter="hamburguesas">Hamburguesas</div>
-    <div class="category" data-filter="pizzas">Pizzas</div>
-    <div class="category" data-filter="bebidas">Bebidas</div>
     <div class="category" data-filter="postres">Postres</div>
   </div>
 
-  <div class="products">
+  <div class="products" id="products">
     <!-- ENTRANTES -->
     <div class="card" data-category="entrantes">
       <img src="https://picsum.photos/300/200?1" />
@@ -247,23 +243,41 @@
 </footer>
 
 <script>
-  /* ===== FILTRO CATEGORÍAS ===== */
+  /* ===== FILTRO + ANIMACIÓN SUAVE ===== */
   const categories = document.querySelectorAll('.category');
   const cards = document.querySelectorAll('.card');
+  const container = document.getElementById('products');
+
+  function filterCards(filter) {
+    container.style.opacity = 0;
+    container.style.transform = 'translateY(10px)';
+
+    setTimeout(() => {
+      cards.forEach(card => {
+        const isTop = card.querySelector('.badge')?.textContent === 'TOP';
+        if (filter === 'top') {
+          card.style.display = isTop ? 'block' : 'none';
+        } else {
+          card.style.display = card.dataset.category === filter ? 'block' : 'none';
+        }
+      });
+
+      container.style.opacity = 1;
+      container.style.transform = 'translateY(0)';
+    }, 200);
+  }
 
   categories.forEach(cat => {
     cat.addEventListener('click', () => {
       categories.forEach(c => c.classList.remove('active'));
       cat.classList.add('active');
-      const filter = cat.dataset.filter;
-
-      cards.forEach(card => {
-        card.style.display = card.dataset.category === filter ? 'block' : 'none';
-      });
+      filterCards(cat.dataset.filter);
     });
   });
 
-  /* ===== 3D SUAVE HEADER ===== */
+  filterCards('top');
+
+  /* ===== 3D HEADER ===== */
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg3d'), alpha: true, antialias: true });
